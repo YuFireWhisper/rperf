@@ -1,9 +1,15 @@
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Summary {
     pub min: f64,
     pub max: f64,
     pub sum: f64,
     pub count: usize,
+}
+
+impl Default for Summary {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Summary {
@@ -106,4 +112,3 @@ mod tests {
         assert_eq!(summary.max(), Some(15.0));
     }
 }
-

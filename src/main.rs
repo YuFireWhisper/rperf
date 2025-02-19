@@ -10,5 +10,7 @@ async fn main() {
     
     virtual_user_manager.run().await;
 
-    println!("Overall metrics: {:?}", virtual_user_manager.get_overall_metrics());
+    let metrics = virtual_user_manager.get_overall_metrics();
+    println!("{:#?}", metrics);
+    println!("ave total_latency: {}", metrics.total_latency.average().unwrap());
 }
