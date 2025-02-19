@@ -106,3 +106,51 @@ impl VirtualUser {
         self.metrics.clone()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::time::{sleep, Duration};
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    #[tokio::test]
+    async fn test_virtual_user_success() {
+        let mock_server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/"))
+            .respond_with(ResponseTemplate::new(200))
+            .mount(&mock_server)
+            .await;
+
+        let url = mock_server.uri();
+        let mut vu = VirtualUser::new(&url, Duration::from_secs(1))
+            .set_graceful_shutdown(Duration::from_millis(50));
+        vu.start();
+
+        sleep(Duration::from_millis(200)).await;
+        vu.stop().await;
+
+        let metrics = vu.metrics();
+        let m = metrics.lock().await;
+        assert!(m.http_request_time.count() > 0);
+        assert!(m.status_code_counts.contains_key(&200));
+        assert_eq!(m.total_errors, 0);
+    }
+
+    #[tokio::test]
+    async fn test_virtual_user_failure() {
+        let invalid_url = "http://127.0.0.1:12345";
+        let mut vu = VirtualUser::new(invalid_url, Duration::from_secs(1))
+            .set_graceful_shutdown(Duration::from_millis(50));
+        vu.start();
+
+        sleep(Duration::from_millis(200)).await;
+        vu.stop().await;
+
+        let metrics = vu.metrics();
+        let m = metrics.lock().await;
+        assert!(m.total_errors > 0);
+        assert!(m.status_code_counts.is_empty());
+    }
+}
