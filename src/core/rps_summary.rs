@@ -111,3 +111,60 @@ impl RpsSummary {
         self.start_time = None;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::thread::sleep;
+    use std::time::Duration;
+
+    #[test]
+    fn test_increment_without_start() {
+        let mut rps = RpsSummary::new(Duration::from_secs(1));
+        assert!(rps.increment_request_count().is_err());
+        assert!(rps.get_current_rps().is_err());
+        assert!(rps.get_average_rps().is_err());
+        assert!(rps.get_all_rps().is_err());
+    }
+
+    #[test]
+    fn test_increment_and_get_current_rps() {
+        let window = Duration::from_secs(1);
+        let mut rps = RpsSummary::new(window);
+        rps.start();
+        assert!(rps.increment_request_count().is_ok());
+
+        let current_rps = rps.get_current_rps().unwrap().unwrap();
+        assert!((current_rps - 1.0).abs() < 0.1);
+    }
+
+    #[test]
+    fn test_increment_in_multiple_windows() {
+        let window = Duration::from_millis(10);
+        let mut rps = RpsSummary::new(window);
+        rps.start();
+
+        assert!(rps.increment_request_count().is_ok());
+
+        sleep(Duration::from_millis(15));
+
+        assert!(rps.increment_request_count().is_ok());
+
+        let rps_vec = rps.get_all_rps().unwrap();
+
+        assert!(rps_vec.len() >= 2);
+        assert!(rps_vec[0] > 0.0);
+        assert!(rps_vec[1] > 0.0);
+    }
+
+    #[test]
+    fn test_reset() {
+        let window = Duration::from_secs(1);
+        let mut rps = RpsSummary::new(window);
+        rps.start();
+        assert!(rps.increment_request_count().is_ok());
+        rps.reset();
+        assert!(rps.request_counts.is_empty());
+        assert!(rps.start_time.is_none());
+    }
+}
