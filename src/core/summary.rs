@@ -8,7 +8,7 @@ pub struct Summary {
 
 impl Summary {
     pub fn new() -> Self {
-        Summary {
+        Self {
             min: f64::MAX,
             max: f64::MIN,
             sum: 0.0,

@@ -14,17 +14,14 @@ type Result<T> = std::result::Result<T, RpsSummaryError>;
 
 #[derive(Debug, Default)]
 pub struct RpsSummary {
-    // 每個時間窗口的請求次數
     request_counts: Vec<usize>,
-    // 時間窗口大小
     window_size: Duration,
-    // 開始時間
     start_time: Option<Instant>,
 }
 
 impl RpsSummary {
-    pub fn new(window_size: Duration) -> RpsSummary {
-        RpsSummary {
+    pub fn new(window_size: Duration) -> Self {
+        Self {
             request_counts: Vec::new(),
             window_size,
             start_time: None,

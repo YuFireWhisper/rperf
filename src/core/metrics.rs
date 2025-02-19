@@ -18,8 +18,8 @@ pub struct Metrics {
 }
 
 impl Metrics {
-    pub fn new(rps_window_size: Duration) -> Metrics {
-        Metrics {
+    pub fn new(rps_window_size: Duration) -> Self {
+        Self {
             rps_summary: RpsSummary::new(rps_window_size),
             ..Default::default()
         }
