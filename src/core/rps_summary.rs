@@ -12,7 +12,7 @@ pub enum RpsSummaryError {
 
 type Result<T> = std::result::Result<T, RpsSummaryError>;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct RpsSummary {
     // 每個時間窗口的請求次數
     request_counts: Vec<usize>,
