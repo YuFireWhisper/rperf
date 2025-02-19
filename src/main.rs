@@ -1,16 +1,14 @@
-use rperf::core::virtual_user::VirtualUser;
+use rperf::core::virtual_user_manager::{VirtualUserConfig, VirtualUserManager};
 
 #[tokio::main]
 async fn main() {
-    let url = "http://35.194.179.59";
+    const URL: &str = "http://35.194.179.59";
+    let config = VirtualUserConfig::new(URL);
 
-    let mut virtual_user = VirtualUser::new(url, std::time::Duration::from_secs(1));
+    let mut virtual_user_manager = VirtualUserManager::new(config);
+    virtual_user_manager.add_plan(std::time::Duration::from_secs(10), 120);
+    
+    virtual_user_manager.run().await;
 
-    virtual_user.start();
-    tokio::time::sleep(std::time::Duration::from_secs(60)).await;
-    virtual_user.stop().await;
-
-    let metrics = virtual_user.metrics();
-    let m = metrics.lock().await;
-    println!("{:#?}", m);
+    println!("Overall metrics: {:?}", virtual_user_manager.get_overall_metrics());
 }
