@@ -1,11 +1,18 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use once_cell::sync::Lazy;
 use reqwest;
 use tokio::sync::{watch, Mutex};
 use tokio::task::JoinHandle;
 
 use super::metrics::Metrics;
+
+static GLOBAL_CLIENT: Lazy<reqwest::Client> = Lazy::new(|| {
+    reqwest::Client::builder()
+        .build()
+        .expect("failed to build client")
+});
 
 pub struct VirtualUser {
     url: String,
@@ -24,8 +31,8 @@ impl VirtualUser {
 
         Self {
             url: url.to_string(),
-            metrics: Arc::new(Mutex::new(Metrics::new(rps_window_size))),
-            client: reqwest::Client::new(),
+            metrics: Arc::new(Metrics::new(rps_window_size).into()),
+            client: GLOBAL_CLIENT.clone(),
             graceful_shutdown: Duration::from_secs(0),
             shutdown_tx: None,
             join_handle: None,
@@ -48,6 +55,8 @@ impl VirtualUser {
         let metrics = self.metrics.clone();
 
         let handle = tokio::spawn(async move {
+            let _ = client.get(&url).send().await;
+
             {
                 let mut m = metrics.lock().await;
                 m.rps_summary.start();
@@ -94,8 +103,7 @@ impl VirtualUser {
         if let Some(mut handle) = self.join_handle.take() {
             if self.graceful_shutdown > Duration::from_secs(0) {
                 tokio::select! {
-                    _ = &mut handle => {
-                    },
+                    _ = &mut handle => {},
                     _ = tokio::time::sleep(self.graceful_shutdown) => {
                         handle.abort();
                     },
