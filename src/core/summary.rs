@@ -1,9 +1,9 @@
 #[derive(Debug, Clone, Default)]
 pub struct Summary {
-    min: f64,
-    max: f64,
-    sum: f64,
-    count: usize,
+    pub min: f64,
+    pub max: f64,
+    pub sum: f64,
+    pub count: usize,
 }
 
 impl Summary {
