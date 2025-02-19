@@ -24,4 +24,16 @@ impl Metrics {
             ..Default::default()
         }
     }
+
+    pub fn total_latency(&self) -> &Summary {
+        &self.total_latency
+    }
+
+    pub fn rps_summary(&self) -> &RpsSummary {
+        &self.rps_summary
+    }
+
+    pub fn status_code_counts(&self) -> &HashMap<u16, usize> {
+        &self.status_code_counts
+    }
 }
