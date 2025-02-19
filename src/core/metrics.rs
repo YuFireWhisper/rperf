@@ -6,15 +6,15 @@ use super::summary::Summary;
 
 #[derive(Debug, Default)]
 pub struct Metrics {
-    total_latency: Summary,
-    tcp_connect_time: Summary,
-    tls_handshake_time: Summary,
-    http_request_time: Summary,
-    rps_summary: RpsSummary,
-    total_errors: usize,
-    error_rates_per_sec: Summary,
-    status_code_counts: HashMap<u16, usize>,
-    other_errors: Vec<String>,
+    pub total_latency: Summary,
+    pub tcp_connect_time: Summary,
+    pub tls_handshake_time: Summary,
+    pub http_request_time: Summary,
+    pub rps_summary: RpsSummary,
+    pub total_errors: usize,
+    pub error_rates_per_sec: Summary,
+    pub status_code_counts: HashMap<u16, usize>,
+    pub other_errors: Vec<String>,
 }
 
 impl Metrics {
@@ -23,17 +23,5 @@ impl Metrics {
             rps_summary: RpsSummary::new(rps_window_size),
             ..Default::default()
         }
-    }
-
-    pub fn total_latency(&self) -> &Summary {
-        &self.total_latency
-    }
-
-    pub fn rps_summary(&self) -> &RpsSummary {
-        &self.rps_summary
-    }
-
-    pub fn status_code_counts(&self) -> &HashMap<u16, usize> {
-        &self.status_code_counts
     }
 }
