@@ -64,3 +64,46 @@ impl Summary {
         self.count
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_summary() {
+        let summary = Summary::new();
+        assert_eq!(summary.count(), 0);
+        assert_eq!(summary.sum(), 0.0);
+        assert_eq!(summary.min(), None);
+        assert_eq!(summary.max(), None);
+        assert_eq!(summary.average(), None);
+    }
+
+    #[test]
+    fn test_update() {
+        let mut summary = Summary::new();
+        summary.update(10.0);
+        summary.update(5.0);
+        summary.update(20.0);
+
+        assert_eq!(summary.count(), 3);
+        assert_eq!(summary.sum(), 35.0);
+        assert_eq!(summary.min(), Some(5.0));
+        assert_eq!(summary.max(), Some(20.0));
+        assert_eq!(summary.average(), Some(35.0 / 3.0));
+    }
+
+    #[test]
+    fn test_update_optional() {
+        let mut summary = Summary::new();
+        summary.update_optional(Some(15.0));
+        summary.update_optional(None);
+        summary.update_optional(Some(5.0));
+
+        assert_eq!(summary.count(), 2);
+        assert_eq!(summary.sum(), 20.0);
+        assert_eq!(summary.min(), Some(5.0));
+        assert_eq!(summary.max(), Some(15.0));
+    }
+}
+
