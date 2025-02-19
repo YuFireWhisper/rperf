@@ -18,6 +18,10 @@ pub struct VirtualUser {
 
 impl VirtualUser {
     pub fn new(url: &str, rps_window_size: Duration) -> Self {
+        if rps_window_size.as_secs() == 0 {
+            panic!("rps_window_size must be greater than 0");
+        }
+
         Self {
             url: url.to_string(),
             metrics: Arc::new(Mutex::new(Metrics::new(rps_window_size))),
@@ -113,6 +117,23 @@ mod tests {
     use tokio::time::{sleep, Duration};
     use wiremock::matchers::{method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    #[test]
+    #[should_panic]
+    fn test_create_new_virtual_user_with_zero_second() {
+        let url = "http://test.com";
+        let rps_window_size = Duration::from_secs(0);
+        VirtualUser::new(url, rps_window_size);
+    }
+
+    #[test]
+    fn test_create_new_virtual_user() {
+        let url = "http://test.com";
+        let rps_window_size = Duration::from_secs(1);
+        let vu = VirtualUser::new(url, rps_window_size);
+        assert_eq!(vu.url, url);
+        assert_eq!(vu.graceful_shutdown, Duration::from_secs(0));
+    }
 
     #[tokio::test]
     async fn test_virtual_user_success() {
